@@ -8,22 +8,23 @@ import {
 import { SupabaseClient } from '@supabase/supabase-js';
 import { SupabaseService } from 'src/supabase/service';
 import { UserDto } from 'src/user/schema';
-
+import { compare, hash } from 'bcrypt';
 
 @Injectable()
 export class AuthServices {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly userServices: UserServices,
-    private jwtService: JwtService
+    private jwtService: JwtService,
   ) {}
 
   private supabase: SupabaseClient = this.supabaseService.getClient();
 
   async signIn(body: Record<string, any>) {
     const user = await this.userServices.getUser(body.email);
-    
-    if (user.password !== body.password) {
+
+    const isMatch = await compare(body.password, user.password);
+    if (!isMatch) {
       throw new UnauthorizedException('Wrong password.');
     }
 
@@ -34,9 +35,13 @@ export class AuthServices {
   }
 
   async signUp(body: UserDto) {
+    const hashedPassword = await hash(body.password, 10);
+
+    const newUser = { ...body, password: hashedPassword };
+
     const { data: createdUser, error } = await this.supabase
       .from('users')
-      .insert(body)
+      .insert(newUser)
       .select();
 
     if (error) {
