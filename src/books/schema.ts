@@ -6,8 +6,9 @@ import {
   Max,
   MinLength,
   MaxLength,
-  IsOptional,
 } from 'class-validator';
+import { PartialType } from '@nestjs/swagger'
+
 
 export class BookDto {
   @IsString({ message: 'Title must be a string.' })
@@ -27,25 +28,5 @@ export class BookDto {
   @Max(new Date().getFullYear())
   publishedYear: number;
 }
+export class UpdateBookDto extends PartialType(BookDto) {}
 
-export class UpdateBookDto {
-  @IsString({ message: 'Title must be a string.' })
-  @MinLength(3, { message: 'Title is too short.' })
-  @MaxLength(32, { message: 'Title is too long.' })
-  @IsOptional()
-  @IsNotEmpty({ message: 'Title is required.' })
-  title?: string;
-
-  @IsString({ message: 'Author must be a string.' })
-  @MinLength(3, { message: 'Author is too short.' })
-  @MaxLength(32, { message: 'Author is too long.' })
-  @IsOptional()
-  @IsNotEmpty({ message: 'Title is required.' })
-  author?: string;
-
-  @IsNumber()
-  @IsOptional()
-  @Min(1900)
-  @Max(new Date().getFullYear())
-  publishedYear?: number;
-}
