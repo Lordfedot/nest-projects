@@ -1,11 +1,14 @@
 import {
+  ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 import { SupabaseService } from 'src/supabase/service';
 import { BookDto } from './schema';
+import { JwtPayload } from 'src/interfaces';
 
 @Injectable()
 export class BookServices {
@@ -30,17 +33,21 @@ export class BookServices {
     return data;
   }
 
-  async createBook(data: BookDto): Promise<any[]> {
-    const { data: createdBook } = await this.supabase
+  async createBook(data: BookDto) {
+    const { data: createdBook, error } = await this.supabase
       .from('books')
       .insert(data)
       .select();
 
+    if (error) {
+      throw new UnauthorizedException(error.message);
+    }
+
     return createdBook;
   }
 
-  async deleteBook(id: string) {
-    const { data } = await this.supabase
+  async deleteBook(id: string, user: JwtPayload) {
+    const { data, error } = await this.supabase
       .from('books')
       .delete()
       .eq('id', id)
