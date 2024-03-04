@@ -19,8 +19,9 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException('No token provided');
     }
-
+    
     const { data } = await this.supabase.auth.getUser(token);
+
     if (!data.user) {
       throw new UnauthorizedException('Invalid token');
     }
