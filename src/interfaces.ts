@@ -6,11 +6,4 @@ export interface ReturnUserDto {
   password: string;
 }
 
-export type JwtPayload = {
-  username: string;
-  sub: number;
-  iat: number;
-  exp: number;
-};
-
-export type RequestWithUser = Request & { user: JwtPayload };
+export type RequestWithUserId = Request & { userId: string };

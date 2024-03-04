@@ -7,13 +7,15 @@ import {
   Patch,
   Post,
   Request,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 
 import { BookServices } from './services';
 import { BookDto, UpdateBookDto } from './schema';
-import { RequestWithUser } from 'src/interfaces';
+import { RequestWithUserId } from 'src/interfaces';
+import { AuthGuard } from 'src/auth/guard';
 
 @Controller('books')
 export class BookController {
@@ -32,17 +34,17 @@ export class BookController {
   }
 
   @Post()
+  @UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe())
-  async createBook(@Body() body: BookDto) {
-    const data = await this.bookServices.createBook(body);
+  async createBook(@Body() body: BookDto, @Request() req: RequestWithUserId) {
+    const userId = req.userId;
+    const data = await this.bookServices.createBook(body, userId);
     return { message: 'Success', data };
   }
 
   @Delete(':id')
-  async deleteBook(@Param('id') id: string, @Request() req: RequestWithUser) {
-    const user = req.user;
-
-    const result = await this.bookServices.deleteBook(id, user);
+  async deleteBook(@Param('id') id: string, @Request() req: RequestWithUserId) {
+    const result = await this.bookServices.deleteBook(id);
     return { message: `Success, book with id ${id} deleted`, result };
   }
 

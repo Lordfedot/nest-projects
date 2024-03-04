@@ -1,5 +1,4 @@
 import {
-  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -8,7 +7,6 @@ import { SupabaseClient } from '@supabase/supabase-js';
 
 import { SupabaseService } from 'src/supabase/service';
 import { BookDto } from './schema';
-import { JwtPayload } from 'src/interfaces';
 
 @Injectable()
 export class BookServices {
@@ -33,10 +31,11 @@ export class BookServices {
     return data;
   }
 
-  async createBook(data: BookDto) {
+  async createBook(data: BookDto, userId: string) {
+    const book = { ...data, user_id: userId };
     const { data: createdBook, error } = await this.supabase
       .from('books')
-      .insert(data)
+      .insert(book)
       .select();
 
     if (error) {
@@ -46,7 +45,7 @@ export class BookServices {
     return createdBook;
   }
 
-  async deleteBook(id: string, user: JwtPayload) {
+  async deleteBook(id: string) {
     const { data, error } = await this.supabase
       .from('books')
       .delete()

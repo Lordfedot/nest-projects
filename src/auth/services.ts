@@ -35,4 +35,11 @@ export class AuthServices {
 
     return createdUser;
   }
+
+  async signOut(){
+    const {error} = await this.supabase.auth.signOut()
+    if(error){
+      throw new BadRequestException()
+    }
+  }
 }
