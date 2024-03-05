@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   UseGuards,
   UsePipes,
@@ -17,14 +18,16 @@ import { BookDto, UpdateBookDto } from './schema';
 import { RequestWithUserId } from 'src/interfaces';
 import { AuthGuard } from 'src/auth/guard';
 
-
 @Controller('books')
 export class BookController {
   constructor(private readonly bookServices: BookServices) {}
 
   @Get()
-  async getAllBooks() {
-    const data = await this.bookServices.getAllBooks();
+  async getAllBooks(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    const data = await this.bookServices.getAllBooks(page, limit);
     return { message: 'Success', data };
   }
 

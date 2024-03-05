@@ -16,8 +16,15 @@ export class BookServices {
 
   private supabase: SupabaseClient = this.supabaseService.getClient();
 
-  async getAllBooks() {
-    const { data } = await this.supabase.from('books').select();
+  async getAllBooks(page: number, limit: number) {
+    const start = (page - 1) * limit;
+    const end = start + limit - 1;
+
+    const { data } = await this.supabase
+      .from('books')
+      .select()
+      .limit(limit)
+      .range(start, end);
 
     if (!data || data.length === 0) {
       throw new NotFoundException();
@@ -82,7 +89,7 @@ export class BookServices {
     if (bookToUpdate.user_id !== userId) {
       throw new ForbiddenException('Forbidden action for this user.');
     }
-    
+
     const { data, error } = await this.supabase
       .from('books')
       .update(body)
