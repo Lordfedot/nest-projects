@@ -6,4 +6,4 @@ export interface ReturnUserDto {
   password: string;
 }
 
-export type RequestWithUserId = Request & { userId: string };
+export type RequestWithUser = Request & { user: any };

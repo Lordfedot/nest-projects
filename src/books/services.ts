@@ -20,12 +20,14 @@ export class BookServices {
     const start = (page - 1) * limit;
     const end = start + limit - 1;
 
-    const { data } = await this.supabase
+    const { data, error } = await this.supabase
       .from('books')
       .select()
       .limit(limit)
       .range(start, end);
-
+    if (error) {
+      throw new BadRequestException(error);
+    }
     if (!data || data.length === 0) {
       throw new NotFoundException();
     }
@@ -40,30 +42,31 @@ export class BookServices {
     return data;
   }
 
-  async createBook(data: BookDto, userId: string) {
-    const book = { ...data, user_id: userId };
+  async createBook(data: BookDto, user: any) {
+    const book = { ...data, user_id: user.sub };
     const { data: createdBook, error } = await this.supabase
       .from('books')
       .insert(book)
       .select();
 
     if (error) {
-      throw new UnauthorizedException(error.message);
+      throw new BadRequestException(error.message);
     }
 
     return createdBook;
   }
 
-  async deleteBook(id: string, userId: string) {
+  async deleteBook(id: string, user: any) {
     const { data: bookToDelete } = await this.supabase
       .from('books')
       .select()
       .eq('id', id)
       .single();
+
     if (!bookToDelete) {
       throw new NotFoundException('Book with this ID is not found.');
     }
-    if (bookToDelete.user_id !== userId) {
+    if (bookToDelete.user_id !== user.sub) {
       throw new ForbiddenException('Forbidden action for this user.');
     }
 
@@ -77,7 +80,7 @@ export class BookServices {
     }
   }
 
-  async updateBook(id: string, body: any, userId: string) {
+  async updateBook(id: string, body: any, user: any) {
     const { data: bookToUpdate } = await this.supabase
       .from('books')
       .select()
@@ -86,7 +89,7 @@ export class BookServices {
     if (!bookToUpdate) {
       throw new NotFoundException('Book with this ID is not found.');
     }
-    if (bookToUpdate.user_id !== userId) {
+    if (bookToUpdate.user_id !== user.sub) {
       throw new ForbiddenException('Forbidden action for this user.');
     }
 
@@ -97,7 +100,7 @@ export class BookServices {
       .select()
       .single();
     if (error) {
-      throw new BadRequestException(error.message);
+      throw new BadRequestException(error);
     }
     if (!data) {
       throw new NotFoundException('Book with this ID is not found.');

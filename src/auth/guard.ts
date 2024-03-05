@@ -4,14 +4,12 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { SupabaseClient } from '@supabase/supabase-js';
 import { Request } from 'express';
-import { SupabaseService } from 'src/supabase/service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly supabaseService: SupabaseService) {}
-  private supabase: SupabaseClient = this.supabaseService.getClient();
+  constructor(private jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -19,13 +17,15 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException('No token provided');
     }
-    
-    const { data } = await this.supabase.auth.getUser(token);
-  
-    if (!data.user) {
+
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      });
+      request['user'] = payload;
+    } catch {
       throw new UnauthorizedException('Invalid token');
     }
-    request['userId'] = data.user.id;
 
     return true;
   }

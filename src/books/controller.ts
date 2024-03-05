@@ -15,7 +15,7 @@ import {
 
 import { BookServices } from './services';
 import { BookDto, UpdateBookDto } from './schema';
-import { RequestWithUserId } from 'src/interfaces';
+import { RequestWithUser } from 'src/interfaces';
 import { AuthGuard } from 'src/auth/guard';
 
 @Controller('books')
@@ -40,17 +40,17 @@ export class BookController {
   @Post()
   @UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe())
-  async createBook(@Body() body: BookDto, @Request() req: RequestWithUserId) {
-    const userId = req.userId;
-    const data = await this.bookServices.createBook(body, userId);
+  async createBook(@Body() body: BookDto, @Request() req: RequestWithUser) {
+    const user = req.user;
+    const data = await this.bookServices.createBook(body, user);
     return { message: 'Success', data };
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard)
-  async deleteBook(@Param('id') id: string, @Request() req: RequestWithUserId) {
-    const userId = req.userId;
-    const result = await this.bookServices.deleteBook(id, userId);
+  async deleteBook(@Param('id') id: string, @Request() req: RequestWithUser) {
+    const user = req.user;
+    const result = await this.bookServices.deleteBook(id, user);
     return { message: `Success, book with id ${id} deleted`, result };
   }
 
@@ -60,10 +60,10 @@ export class BookController {
   async updateBook(
     @Param('id') id: string,
     @Body() body: UpdateBookDto,
-    @Request() req: RequestWithUserId,
+    @Request() req: RequestWithUser,
   ) {
-    const userId = req.userId;
-    const result = await this.bookServices.updateBook(id, body, userId);
+    const user = req.user;
+    const result = await this.bookServices.updateBook(id, body, user);
     return { message: 'Success', result };
   }
 }
